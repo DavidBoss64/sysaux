@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+
+{% block title %}Actividades - SysAux{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <a href="{{ url_for('gestion.dashboard_actividades', id=paralelo.id) }}" class="btn btn-outline-secondary btn-sm mb-2">
+            <i class="bi bi-arrow-left"></i> Volver a Categorías
+        </a>
+        <h2 class="fw-bold text-dark mb-0"><i class="bi bi-card-checklist text-success me-2"></i>{{ parametro.nombre_parametro }}</h2>
+        <h5 class="text-muted mt-1">Paralelo {{ paralelo.nombre }} <span class="badge bg-primary ms-2">{{ parametro.ponderacion }} pts</span></h5>
+    </div>
+    
+    <div class="d-flex align-items-center">
+        <a href="{{ url_for('gestion.papelera') }}" class="btn btn-outline-danger shadow-sm me-2" title="Papelera de Reciclaje">
+            <i class="bi bi-trash3-fill"></i> Papelera
+        </a>
+
+        <button class="btn btn-success shadow-sm" data-bs-toggle="modal" data-bs-target="#crearActividadModal">
+            <i class="bi bi-plus-lg"></i> Nueva Actividad
+        </button>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0 rounded-4">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">Fecha</th>
+                        <th>Título de la Actividad</th>
+                        <th>Cód. Asistencia</th>
+                        <th class="text-center">Estado Asistencia</th>
+                        <th class="text-end pe-4">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if actividades %}
+                        {% for actividad in actividades %}
+                        <tr>
+                            <td class="ps-4 text-muted small">{{ actividad.fecha.strftime('%d-%m-%Y') }}</td>
+                            <td class="fw-medium text-dark">{{ actividad.titulo }}</td>
+                            <td>
+                                {% if actividad.codigo_asistencia %}
+                                    <code class="bg-light p-1 rounded border">{{ actividad.codigo_asistencia }}</code>
+                                {% else %}
+                                    <span class="text-muted small">-</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                {% if parametro.tipo == 'asistencia' %}
+                                    <form action="{{ url_for('gestion.conmutar_asistencia', id=actividad.id) }}" method="POST" class="d-inline">
+                                        {% if actividad.esta_abierta %}
+                                            <button type="submit" class="btn btn-sm btn-success fw-bold" title="Click para Cerrar">
+                                                <i class="bi bi-unlock-fill"></i> ABIERTA
+                                            </button>
+                                        {% else %}
+                                            <button type="submit" class="btn btn-sm btn-secondary" title="Click para Abrir">
+                                                <i class="bi bi-lock-fill"></i> CERRADA
+                                            </button>
+                                        {% endif %}
+                                    </form>
+                                {% else %}
+                                    <span class="badge bg-light text-secondary border">Normal</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end pe-4">
+                                <a href="{{ url_for('gestion.calificar_actividad', id=actividad.id) }}" class="btn btn-sm btn-outline-success me-1" title="Calificar Actividad">
+                                    <i class="bi bi-ui-checks"></i>
+                                </a>
+
+                                <button type="button" class="btn btn-sm btn-outline-secondary me-1" data-bs-toggle="modal" data-bs-target="#editarActividadModal{{ actividad.id }}" title="Editar Actividad">
+                                    <i class="bi bi-pencil-square"></i>
+                                </button>
+
+                                <form action="{{ url_for('gestion.eliminar_actividad', id=actividad.id) }}" method="POST" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Eliminar Actividad" onclick="return confirm('⚠️ ATENCIÓN: Si eliminas esta actividad, todas las notas o asistencias registradas en ella desaparecerán del promedio de los estudiantes.\n\n¿Estás completamente seguro de continuar?');">
+                                        <i class="bi bi-trash3"></i>
+                                    </button>
+                                </form>
+                            </td>
+
+                            <div class="modal fade text-start" id="editarActividadModal{{ actividad.id }}" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content border-0 rounded-4 shadow">
+                                        <div class="modal-header bg-light rounded-top-4 py-3">
+                                            <h5 class="modal-title fw-bold text-dark"><i class="bi bi-pencil-square text-secondary me-2"></i>Editar Actividad</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <form method="POST" action="{{ url_for('gestion.editar_actividad', id=actividad.id) }}">
+                                            <div class="modal-body p-4">
+                                                <div class="mb-3">
+                                                    <label class="form-label text-muted fw-semibold text-sm">Título de la Actividad *</label>
+                                                    <input type="text" class="form-control" name="titulo" value="{{ actividad.titulo }}" required autocomplete="off">
+                                                </div>
+
+                                                <div class="row g-3 mb-3">
+                                                    <div class="col-md-6">
+                                                        <label class="form-label text-muted fw-semibold text-sm">Fecha *</label>
+                                                        <input type="date" class="form-control" name="fecha" value="{{ actividad.fecha.strftime('%Y-%m-%d') }}" required>
+                                                    </div>
+
+                                                    {% if parametro.tipo == 'asistencia' %}
+                                                    <div class="col-md-6">
+                                                        <label class="form-label text-muted fw-semibold text-sm">Cód. Asistencia</label>
+                                                        <input type="text" class="form-control" name="codigo_asistencia" value="{{ actividad.codigo_asistencia or '' }}" placeholder="Opcional" autocomplete="off">
+                                                    </div>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer bg-light py-3">
+                                                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                                <button type="submit" class="btn btn-success fw-bold">Actualizar</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center py-5 text-muted">
+                                <i class="bi bi-clipboard-x display-6 d-block mb-3 text-secondary opacity-50"></i>
+                                <h5>No hay actividades registradas</h5>
+                                <p class="text-sm">Crea prácticas, exámenes o registros de asistencia para comenzar a evaluar.</p>
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="crearActividadModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow">
+            <div class="modal-header bg-light rounded-top-4 py-3">
+                <h5 class="modal-title fw-bold text-dark"><i class="bi bi-file-earmark-plus text-success me-2"></i>Crear Nueva Actividad</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('gestion.lista_actividades', parametro_id=parametro.id) }}">
+                <div class="modal-body p-4">
+
+                    <div class="mb-3">
+                        <label class="form-label text-muted fw-semibold text-sm">Título de la Actividad *</label>
+                        <input type="text" class="form-control" name="titulo" placeholder="Ej: Práctica de Grafos, Asistencia Sem 1..." required autocomplete="off">
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label text-muted fw-semibold text-sm">Fecha *</label>
+                            <input type="date" class="form-control" name="fecha" required>
+                        </div>
+                        
+                        {% if parametro.tipo == 'asistencia' %}
+                        <div class="col-md-6">
+                            <label class="form-label text-muted fw-semibold text-sm">Cód. Asistencia (Opcional)</label>
+                            <input type="text" class="form-control" name="codigo_asistencia" placeholder="Ej: UPEA-15JUN" autocomplete="off">
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    {% if parametro.tipo == 'asistencia' %}
+                    <div class="alert alert-info py-2 mb-0 text-sm">
+                        <i class="bi bi-info-circle me-1"></i> Si agregas un Código de Asistencia, los estudiantes podrán auto-registrarse desde sus cuentas.
+                    </div>
+                    {% endif %}
+
+                </div>
+                <div class="modal-footer bg-light py-3">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-success fw-bold">Guardar Actividad</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

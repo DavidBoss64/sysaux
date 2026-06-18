@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+
+{% block title %}Mis Paralelos - SysAux{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold text-dark"><i class="bi bi-people-fill text-primary me-2"></i>Mis Paralelos</h2>
+
+    <div>
+        <a href="{{ url_for('gestion.papelera') }}" class="btn btn-outline-danger shadow-sm rounded-3 me-2"
+            title="Papelera de Reciclaje">
+            <i class="bi bi-trash3-fill"></i> Papelera
+        </a>
+
+        <button class="btn btn-primary shadow-sm rounded-3" data-bs-toggle="modal" data-bs-target="#crearParaleloModal">
+            <i class="bi bi-plus-lg"></i> Nuevo Paralelo
+        </button>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0 rounded-4">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">Materia</th>
+                        <th>Paralelo</th>
+                        <th>Código Inscripción</th>
+                        <th class="text-end pe-4">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if paralelos %}
+                    {% for paralelo in paralelos %}
+                    <tr>
+                        <td class="ps-4 fw-medium">{{ paralelo.materia.nombre }} ({{ paralelo.materia.sigla }})</td>
+                        <td><span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 fs-6">{{ paralelo.nombre
+                                }}</span></td>
+                        <td>
+                            {% if paralelo.codigo_inscripcion %}
+                            <code
+                                class="fs-6 bg-light p-2 rounded text-dark border">{{ paralelo.codigo_inscripcion }}</code>
+                            {% else %}
+                            <span class="text-muted text-sm-start italic">Sin código (Inscripción libre)</span>
+                            {% endif %}
+                        </td>
+
+                        <td class="text-end pe-4">
+                            <a href="{{ url_for('gestion.parametros', id=paralelo.id) }}"
+                                class="btn btn-sm btn-outline-info me-1" title="Configurar Parámetros">
+                                <i class="bi bi-gear-fill"></i>
+                            </a>
+                            <a href="{{ url_for('gestion.estudiantes', id=paralelo.id) }}"
+                                class="btn btn-sm btn-outline-primary me-1" title="Administrar Estudiantes">
+                                <i class="bi bi-person-lines-fill"></i>
+                            </a>
+                            <button type="button" class="btn btn-sm btn-outline-secondary me-1" data-bs-toggle="modal"
+                                data-bs-target="#editarParaleloModal{{ paralelo.id }}" title="Editar Paralelo">
+                                <i class="bi bi-pencil-square"></i>
+                            </button>
+                            <form action="{{ url_for('gestion.eliminar_paralelo', id=paralelo.id) }}" method="POST"
+                                class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Eliminar"
+                                    onclick="return confirm('¿Estás seguro de eliminar este paralelo?');">
+                                    <i class="bi bi-trash3"></i>
+                                </button>
+                            </form>
+                        </td>
+
+                        <div class="modal fade text-start" id="editarParaleloModal{{ paralelo.id }}" tabindex="-1"
+                            aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content border-0 rounded-4 shadow">
+                                    <div class="modal-header bg-light rounded-top-4 py-3">
+                                        <h5 class="modal-title fw-bold text-dark"><i
+                                                class="bi bi-pencil-square text-secondary me-2"></i>Editar Paralelo</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <form method="POST"
+                                        action="{{ url_for('gestion.editar_paralelo', id=paralelo.id) }}">
+                                        <div class="modal-body p-4">
+                                            <div class="mb-3">
+                                                <label class="form-label fw-semibold text-secondary">Materia *</label>
+                                                <select class="form-select" name="materia_id" required>
+                                                    {% for materia in materias %}
+                                                    <option value="{{ materia.id }}" {% if
+                                                        materia.id==paralelo.materia_id %}selected{% endif %}>
+                                                        {{ materia.nombre }} ({{ materia.sigla }})
+                                                    </option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label fw-semibold text-secondary">Nombre del Paralelo
+                                                    *</label>
+                                                <input type="text" class="form-control" name="nombre"
+                                                    value="{{ paralelo.nombre }}" required>
+                                            </div>
+                                            <div class="mb-2">
+                                                <label class="form-label fw-semibold text-secondary">Código de
+                                                    Inscripción</label>
+                                                <input type="text" class="form-control" name="codigo_inscripcion"
+                                                    value="{{ paralelo.codigo_inscripcion or '' }}">
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label text-muted fw-semibold text-sm">Nota Máxima
+                                                    (Puntos) *</label>
+                                                <input type="number" class="form-control" name="nota_maxima" step="0.5"
+                                                    value="{{ paralelo.nota_maxima }}" required>
+                                            </div>
+                                        </div>
+
+                                        <div class="modal-footer bg-light py-3">
+                                            <button type="button" class="btn btn-outline-secondary"
+                                                data-bs-dismiss="modal">Cancelar</button>
+                                            <button type="submit" class="btn btn-success fw-bold">Actualizar</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </tr>
+                    {% endfor %}
+                    {% else %}
+                    <tr>
+                        <td colspan="4" class="text-center py-5 text-muted">
+                            <i class="bi bi-folder-x display-4 d-block mb-3 text-secondary opacity-50"></i>
+                            <h5>No tienes paralelos registrados aún</h5>
+                            <p class="text-sm">Crea tu primer grupo de prácticas para comenzar a gestionar a los
+                                estudiantes.</p>
+                        </td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="crearParaleloModal" tabindex="-1" aria-labelledby="crearParaleloModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow">
+            <div class="modal-header bg-light rounded-top-4 border-bottom-0 py-3">
+                <h5 class="modal-title fw-bold text-dark" id="crearParaleloModalLabel">
+                    <i class="bi bi-folder-plus text-primary me-2"></i>Crear Nuevo Paralelo
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('gestion.paralelos') }}">
+                <div class="modal-body p-4">
+
+                    <div class="mb-3">
+                        <label for="materia_id" class="form-label fw-semibold text-secondary">Materia Seleccionada
+                            *</label>
+                        <select class="form-select form-select-lg" id="materia_id" name="materia_id" required>
+                            <option value="" disabled selected>-- Selecciona una materia --</option>
+                            {% for materia in materias %}
+                            <option value="{{ materia.id }}">{{ materia.nombre }} ({{ materia.sigla }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="nombre" class="form-label fw-semibold text-secondary">Nombre del Paralelo *</label>
+                        <input type="text" class="form-control form-control-lg" id="nombre" name="nombre"
+                            placeholder="Ej: 1ro A, 1ro B, Grupo 1" required autocomplete="off">
+                    </div>
+
+                    <div class="mb-2">
+                        <label for="codigo_inscripcion" class="form-label fw-semibold text-secondary">Código de
+                            Inscripción (Opcional)</label>
+                        <input type="text" class="form-control form-control-lg" id="codigo_inscripcion"
+                            name="codigo_inscripcion" placeholder="Ej: DISCRETA2026" autocomplete="off">
+                        <div class="form-text text-muted">
+                            Si defines un código, los estudiantes lo necesitarán obligatoriamente para poder unirse a
+                            este paralelo desde sus cuentas.
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted fw-semibold text-sm">Nota Máxima (Puntos) *</label>
+                        <input type="number" class="form-control" name="nota_maxima" step="0.5" value="10.0" required>
+                        <div class="form-text text-sm">Por defecto es 10 pts, pero puedes editarlo.</div>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer bg-light rounded-bottom-4 border-top-0 py-3">
+                    <button type="button" class="btn btn-outline-secondary px-4"
+                        data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary px-4 fw-bold">Guardar Paralelo</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

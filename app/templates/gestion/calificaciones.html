@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}Calificar Actividad - SysAux{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <a href="{{ url_for('gestion.lista_actividades', parametro_id=actividad.parametro_id) }}" class="btn btn-outline-secondary btn-sm mb-3">
+    <i class="bi bi-arrow-left"></i> Volver a Actividades
+    </a>
+    <h2 class="fw-bold text-dark"><i class="bi bi-ui-checks text-success me-2"></i>Calificar Actividad</h2>
+    <h5 class="text-muted">{{ actividad.titulo }} <span class="badge bg-primary ms-2">Máximo: {{
+            actividad.parametro.ponderacion }} pts</span></h5>
+    <p class="text-sm mb-0">Paralelo: <strong>{{ paralelo.nombre }}</strong> ({{ paralelo.materia.nombre }})</p>
+</div>
+
+<div class="mb-3">
+    <div class="input-group shadow-sm rounded-3" style="max-width: 400px;">
+        <span class="input-group-text bg-white border-end-0 text-muted">
+            <i class="bi bi-search"></i>
+        </span>
+        <input type="text" id="buscadorEstudiante" class="form-control border-start-0 shadow-none ps-0" 
+               placeholder="Buscar por apellido, nombre o C.I....">
+    </div>
+</div>
+
+<div class="card shadow-sm border-0 rounded-4">
+    <form method="POST" action="{{ url_for('gestion.calificar_actividad', id=actividad.id) }}">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4">N°</th>
+                            <th>Estudiante</th>
+                            <th>C.I.</th>
+                            <th class="text-end pe-4" style="width: 200px;">Puntaje Asignado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if inscripciones %}
+                        {% for inscripcion in inscripciones %}
+                        <tr class="fila-estudiante">
+                            <td class="ps-4 text-muted">{{ loop.index }}</td>
+                            <td class="fw-medium text-dark">{{ inscripcion.estudiante.apellidos }}, {{
+                                inscripcion.estudiante.nombres }}</td>
+                            <td><code>{{ inscripcion.estudiante.ci }}</code></td>
+                            <td class="text-end pe-4">
+                                {% if tipo_parametro == 'asistencia' %}
+                                <div class="form-check form-switch d-flex justify-content-end">
+                                    <input class="form-check-input fs-4 cursor-pointer shadow-none" type="checkbox"
+                                        role="switch" name="asistencia_{{ inscripcion.estudiante.id }}" value="1" {% if
+                                        notas.get(inscripcion.estudiante.id) %}checked{% endif %}>
+                                </div>
+                                {% else %}
+                                <div class="input-group input-group-sm justify-content-end">
+                                    <input type="number" step="0.1" min="0" max="{{ actividad.parametro.ponderacion }}"
+                                        class="form-control form-control-sm text-end shadow-none"
+                                        style="max-width: 90px;" name="nota_{{ inscripcion.estudiante.id }}"
+                                        value="{{ notas.get(inscripcion.estudiante.id, '') }}" placeholder="0.0">
+                                    <span class="input-group-text bg-light text-muted">/ {{
+                                        actividad.parametro.ponderacion }}</span>
+                                </div>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        {% else %}
+                        <tr>
+                            <td colspan="4" class="text-center py-5 text-muted">
+                                <i class="bi bi-person-x display-6 d-block mb-3 text-secondary opacity-50"></i>
+                                <h5>No hay estudiantes inscritos</h5>
+                                <p class="text-sm">Inscribe alumnos en el paralelo para poder calificarlos.</p>
+                            </td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card-footer bg-light border-top-0 py-3 text-end rounded-bottom-4">
+            <button type="submit" class="btn btn-success fw-bold px-4 shadow-sm" {% if not inscripciones %}disabled{%
+                endif %}>
+                <i class="bi bi-floppy me-2"></i>Guardar Calificaciones
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+<script>
+document.getElementById('buscadorEstudiante').addEventListener('keyup', function() {
+    let filtro = this.value.toLowerCase().trim();
+    let filas = document.querySelectorAll('.fila-estudiante');
+
+    filas.forEach(function(fila) {
+        // Obtenemos todo el texto de la fila (Nombre, Apellidos, CI)
+        let textoFila = fila.textContent.toLowerCase();
+        
+        // Si el texto incluye lo que estamos buscando, se muestra; si no, se oculta
+        if (textoFila.includes(filtro)) {
+            fila.style.display = '';
+        } else {
+            fila.style.display = 'none';
+        }
+    });
+});
+</script>

@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Inicio - SysAux{% endblock %}
+
+{% block content %}
+    {% if current_user.is_authenticated %}
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card shadow-sm border-0 rounded-4 bg-primary text-white">
+                    <div class="card-body p-4 d-flex align-items-center">
+                        <div class="bg-white bg-opacity-25 rounded-circle p-3 me-4">
+                            <i class="bi bi-person-badge fs-1"></i>
+                        </div>
+                        <div>
+                            <h2 class="fw-bold mb-1">¡Hola, {{ current_user.nombres }}!</h2>
+                            <p class="mb-0 fs-5 text-white-50">
+                                Gestión Activa: <span class="badge bg-light text-primary">{{ current_user.rol.nombre }}</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h4 class="fw-bold text-dark mb-3"><i class="bi bi-grid-1x2-fill text-secondary me-2"></i>Paneles de Control</h4>
+
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card shadow-sm border-0 h-100 border-top border-primary border-3">
+                    <div class="card-body p-4 d-flex flex-column justify-content-between">
+                        <div>
+                            <div class="text-primary mb-3"><i class="bi bi-sliders fs-2"></i></div>
+                            <h4 class="fw-bold text-dark">Configuración Base</h4>
+                            <p class="text-muted small">Administra la creación de tus paralelos, asigna las ponderaciones de los 10 puntos y gestiona las inscripciones manuales o bajas de alumnos.</p>
+                        </div>
+                        <a href="{{ url_for('gestion.paralelos') }}" class="btn btn-outline-primary btn-sm w-100 mt-3 rounded-3 fw-semibold">
+                            <i class="bi bi-gear-fill me-1"></i> Configurar Cursos
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card shadow-sm border-0 h-100 border-top border-success border-3">
+                    <div class="card-body p-4 d-flex flex-column justify-content-between">
+                        <div>
+                            <div class="text-success mb-3"><i class="bi bi-calendar-check fs-2"></i></div>
+                            <h4 class="fw-bold text-dark">Asistencias y Prácticas</h4>
+                            <p class="text-muted small">Crea las actividades del día a día, abre el portal para el auto-registro de asistencia con código secreto en clase o califica las prácticas entregadas.</p>
+                        </div>
+                        <a href="{{ url_for('gestion.panel_operativo') }}" class="btn btn-outline-success btn-sm w-100 mt-3 rounded-3 fw-semibold">
+                            <i class="bi bi-play-circle-fill me-1"></i> Ir al Día a Día
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card shadow-sm border-0 h-100 border-top border-warning border-3">
+                    <div class="card-body p-4 d-flex flex-column justify-content-between">
+                        <div>
+                            <div class="text-warning mb-3"><i class="bi bi-file-earmark-spreadsheet fs-2"></i></div>
+                            <h4 class="fw-bold text-dark">Centralizador de Notas</h4>
+                            <p class="text-muted small">Visualiza la sábana completa de calificaciones acumuladas proporcionalmente sobre los 10 puntos y exporta las planillas oficiales a Excel.</p>
+                        </div>
+                        <a href="#" class="btn btn-outline-warning btn-sm w-100 mt-3 rounded-3 fw-semibold">
+                            <i class="bi bi-download me-1"></i> Ver Centralizador
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    {% else %}
+        <div class="row justify-content-center align-items-center text-center mt-5">
+            <div class="col-lg-8">
+                <i class="bi bi-laptop text-primary" style="font-size: 5rem;"></i>
+                <h1 class="display-4 fw-bold text-dark mt-3">Sistema de Gestión Académica</h1>
+                <p class="lead text-muted mt-3 mb-4">
+                    Plataforma para el control de calificaciones, asistencias y administración de paralelos.
+                </p>
+                <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-lg px-5 rounded-pill shadow-sm">
+                    Ingresar al Sistema
+                </a>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}

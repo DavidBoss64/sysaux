@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+
+{% block title %}Estudiantes - SysAux{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <a href="{{ url_for('gestion.paralelos') }}" class="btn btn-outline-secondary btn-sm mb-2">
+            <i class="bi bi-arrow-left"></i> Volver a Paralelos
+        </a>
+        <h2 class="fw-bold text-dark mb-0"><i class="bi bi-people-fill text-primary me-2"></i>Lista de Estudiantes</h2>
+        <h5 class="text-muted mt-1">{{ paralelo.materia.nombre }} - Paralelo {{ paralelo.nombre }}</h5>
+    </div>
+    <div>
+        <button class="btn btn-outline-success shadow-sm me-2" disabled title="Próximamente: Carga mediante Excel">
+            <i class="bi bi-file-earmark-excel"></i> Importar Excel
+        </button>
+        <button class="btn btn-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#inscribirEstudianteModal">
+            <i class="bi bi-person-plus-fill"></i> Inscribir Estudiante
+        </button>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0 rounded-4">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">N°</th>
+                        <th>Apellidos y Nombres</th>
+                        <th>C.I.</th>
+                        <th>R.U.</th>
+                        <th>Fecha de Inscripción</th>
+                        <th class="text-end pe-4">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if inscripciones %}
+                    {% for inscripcion in inscripciones %}
+                    <tr>
+                        <td class="ps-4 text-muted">{{ loop.index }}</td>
+                        <td class="fw-medium text-dark">{{ inscripcion.estudiante.apellidos }}, {{
+                            inscripcion.estudiante.nombres }}</td>
+                        <td><code>{{ inscripcion.estudiante.ci }}</code></td>
+                        <td>
+                            {% if inscripcion.estudiante.ru %}
+                            <span class="badge bg-secondary">{{ inscripcion.estudiante.ru }}</span>
+                            {% else %}
+                            <span class="text-muted small">Sin RU</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-muted small">{{ inscripcion.fecha_inscripcion.strftime('%d-%m-%Y') }}</td>
+                        <td class="text-end pe-4">
+                            <button type="button" class="btn btn-sm btn-outline-secondary me-1" data-bs-toggle="modal"
+                                data-bs-target="#editarEstudianteModal{{ inscripcion.estudiante.id }}"
+                                title="Editar Datos">
+                                <i class="bi bi-pencil-square"></i>
+                            </button>
+
+                            <form action="{{ url_for('gestion.eliminar_inscripcion', id=inscripcion.id) }}"
+                                method="POST" class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Dar de baja"
+                                    onclick="return confirm('¿Estás seguro de dar de baja a este estudiante del paralelo?');">
+                                    <i class="bi bi-person-x"></i>
+                                </button>
+                            </form>
+                        </td>
+
+                        <div class="modal fade text-start" id="editarEstudianteModal{{ inscripcion.estudiante.id }}"
+                            tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content border-0 rounded-4 shadow">
+                                    <div class="modal-header bg-light rounded-top-4 py-3">
+                                        <h5 class="modal-title fw-bold text-dark"><i
+                                                class="bi bi-person-gear text-secondary me-2"></i>Editar Estudiante</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <form method="POST"
+                                        action="{{ url_for('gestion.editar_estudiante', id=inscripcion.estudiante.id) }}">
+                                        <input type="hidden" name="paralelo_id" value="{{ paralelo.id }}">
+
+                                        <div class="modal-body p-4">
+                                            <div class="row g-3 mb-3">
+                                                <div class="col-md-6">
+                                                    <label class="form-label text-muted fw-semibold text-sm">Nombres
+                                                        *</label>
+                                                    <input type="text" class="form-control" name="nombres"
+                                                        value="{{ inscripcion.estudiante.nombres }}" required>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label text-muted fw-semibold text-sm">Apellidos
+                                                        *</label>
+                                                    <input type="text" class="form-control" name="apellidos"
+                                                        value="{{ inscripcion.estudiante.apellidos }}" required>
+                                                </div>
+                                            </div>
+                                            <div class="row g-3">
+                                                <div class="col-md-6">
+                                                    <label class="form-label text-muted fw-semibold text-sm">C.I.
+                                                        *</label>
+                                                    <input type="text" class="form-control" name="ci"
+                                                        value="{{ inscripcion.estudiante.ci }}" required>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label
+                                                        class="form-label text-muted fw-semibold text-sm">R.U.</label>
+                                                    <input type="text" class="form-control" name="ru"
+                                                        value="{{ inscripcion.estudiante.ru or '' }}">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer bg-light py-3">
+                                            <button type="button" class="btn btn-outline-secondary"
+                                                data-bs-dismiss="modal">Cancelar</button>
+                                            <button type="submit" class="btn btn-success fw-bold">Actualizar</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </tr>
+                    {% endfor %}
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center py-5 text-muted">
+                            <i class="bi bi-person-bounding-box display-6 d-block mb-3 text-secondary opacity-50"></i>
+                            <h5>No hay estudiantes inscritos</h5>
+                            <p class="text-sm">Comparte el código de inscripción <strong>{{ paralelo.codigo_inscripcion
+                                    or 'N/A' }}</strong> o inscribe alumnos manualmente.</p>
+                        </td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="inscribirEstudianteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow">
+            <div class="modal-header bg-light rounded-top-4 border-bottom-0 py-3">
+                <h5 class="modal-title fw-bold text-dark">
+                    <i class="bi bi-person-plus text-primary me-2"></i>Inscripción Manual
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('gestion.estudiantes', id=paralelo.id) }}">
+                <div class="modal-body p-4">
+                    <div class="alert alert-info text-sm py-2">
+                        <i class="bi bi-info-circle me-1"></i> Si el estudiante es nuevo, su usuario y contraseña serán
+                        su número de C.I.
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label text-muted fw-semibold text-sm">Nombres *</label>
+                            <input type="text" class="form-control" name="nombres" required autocomplete="off">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted fw-semibold text-sm">Apellidos *</label>
+                            <input type="text" class="form-control" name="apellidos" required autocomplete="off">
+                        </div>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label text-muted fw-semibold text-sm">Carnet de Identidad (C.I.)
+                                *</label>
+                            <input type="text" class="form-control" name="ci" required autocomplete="off">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted fw-semibold text-sm">Registro Universitario
+                                (R.U.)</label>
+                            <input type="text" class="form-control" name="ru" placeholder="Opcional" autocomplete="off">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light rounded-bottom-4 border-top-0 py-3">
+                    <button type="button" class="btn btn-outline-secondary px-4"
+                        data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary px-4 fw-bold">Inscribir Alumno</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
