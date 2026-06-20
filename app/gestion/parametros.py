@@ -13,10 +13,7 @@ def parametros(id):
         return redirect(url_for('gestion.paralelos'))
 
     parametros_actuales = ParametroEvaluacion.query.filter_by(paralelo_id=id, estado=True).all()
-    
-    # 1. Sumamos solo los regulares
     total_puntos = sum(p.ponderacion for p in parametros_actuales if p.tipo != 'liberacion')
-    # 2. Verificamos si ya existe el examen de liberación
     tiene_liberacion = any(p.tipo == 'liberacion' for p in parametros_actuales)
 
     if request.method == 'POST':
@@ -24,18 +21,21 @@ def parametros(id):
         ponderacion = float(request.form.get('ponderacion'))
         tipo = request.form.get('tipo', 'normal') 
         
-        # Blindaje backend: No permitir dos liberaciones
+        # Capturamos el modo de liberación (por defecto 'maximo')
+        modo_liberacion = request.form.get('modo_liberacion', 'maximo') if tipo == 'liberacion' else 'maximo'
+        
         if tipo == 'liberacion' and tiene_liberacion:
             flash('Error: Ya tienes un Examen de Liberación registrado.', 'danger')
             return redirect(url_for('gestion.parametros', id=id))
 
         if tipo != 'liberacion' and (total_puntos + ponderacion > paralelo.nota_maxima):
-            flash(f'Error: Has excedido el límite configurado. Te quedan {paralelo.nota_maxima - total_puntos} pts disponibles.', 'danger')
+            flash(f'Error: Has excedido el límite. Te quedan {paralelo.nota_maxima - total_puntos} pts.', 'danger')
         else:
             nuevo_parametro = ParametroEvaluacion(
                 nombre_parametro=nombre_parametro, 
                 ponderacion=ponderacion, 
                 tipo=tipo,
+                modo_liberacion=modo_liberacion, # <-- Guardamos la estrategia elegida
                 paralelo_id=id
             )
             db.session.add(nuevo_parametro)
@@ -43,12 +43,12 @@ def parametros(id):
             flash('Parámetro agregado exitosamente.', 'success')
         return redirect(url_for('gestion.parametros', id=id))
 
-    # Pasamos la variable tiene_liberacion a la vista HTML
     return render_template('gestion/parametros.html', 
                         paralelo=paralelo, 
                         parametros=parametros_actuales, 
                         total_puntos=total_puntos,
                         tiene_liberacion=tiene_liberacion)
+
 @gestion_bp.route('/parametro/<int:id>/eliminar', methods=['POST'])
 @login_required
 def eliminar_parametro(id):

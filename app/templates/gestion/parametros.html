@@ -66,12 +66,21 @@
                                 numérica)</option>
                                 <option value="asistencia">Asistencia (Checkbox / Auto-registro)</option>
                                 {% endif %}
-
                                 {% if not tiene_liberacion %}
                                 <option value="liberacion" {% if total_puntos>= paralelo.nota_maxima %}selected{% endif
                                     %} class="text-danger fw-bold">Examen de Liberación (Reemplaza al total)</option>
                                 {% endif %}
                         </select>
+                    </div>
+
+                    <div class="mb-3" id="grupoModoLiberacion" style="display: none;">
+                        <label class="form-label text-danger fw-semibold text-sm">Estrategia de Calificación</label>
+                        <select class="form-select border-danger text-danger fw-medium" name="modo_liberacion">
+                            <option value="maximo" selected>📈 Conservar la nota más alta (Recomendado)</option>
+                            <option value="reemplazo">🔄 Reemplazar por completo la nota acumulada</option>
+                        </select>
+                        <div class="form-text text-sm">Define cómo procesará el centralizador la nota de este examen en
+                            relación al semestre.</div>
                     </div>
 
                     <div class="mb-4">
@@ -91,22 +100,25 @@
         document.addEventListener('DOMContentLoaded', function () {
             const selector = document.getElementById('selectorTipo');
             const input = document.getElementById('inputPonderacion');
+            const grupoModo = document.getElementById('grupoModoLiberacion'); // Contenedor del nuevo campo
 
-            function actualizarLimite() {
-                if (!selector || !input) return; // Si el form está oculto, no hace nada
+            function actualizarFormulario() {
+                if (!selector || !input) return;
 
                 if (selector.value === 'liberacion') {
                     input.max = input.getAttribute('data-max-liberacion');
                     input.placeholder = "Máx: " + input.getAttribute('data-max-liberacion');
+                    if (grupoModo) grupoModo.style.display = 'block'; // Mostramos las estrategias si es liberación
                 } else {
                     input.max = input.getAttribute('data-max-normal');
                     input.placeholder = "Máx: " + input.getAttribute('data-max-normal');
+                    if (grupoModo) grupoModo.style.display = 'none'; // Escondemos si es normal o asistencia
                 }
             }
 
             if (selector) {
-                selector.addEventListener('change', actualizarLimite);
-                actualizarLimite();
+                selector.addEventListener('change', actualizarFormulario);
+                actualizarFormulario();
             }
         });
     </script>

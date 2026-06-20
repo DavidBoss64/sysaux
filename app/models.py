@@ -65,9 +65,10 @@ class ParametroEvaluacion(db.Model):
     ponderacion = db.Column(db.Float, nullable=False)
     paralelo_id = db.Column(db.Integer, db.ForeignKey('paralelos.id'), nullable=False)
     estado = db.Column(db.Boolean, default=True)
+    tipo = db.Column(db.String(20), default='normal') # 'normal', 'asistencia', 'liberacion'
     
-    # --- NUEVO: Define si se califica con notas (normal) o con checkbox (asistencia) ---
-    tipo = db.Column(db.String(20), default='normal')
+    # --- Estrategia de cálculo para la liberación ---
+    modo_liberacion = db.Column(db.String(20), default='maximo') # 'maximo' o 'reemplazo'
 
     actividades = db.relationship('Actividad', backref='parametro', lazy=True)
 

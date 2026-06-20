@@ -1,7 +1,7 @@
 import os
 from flask import Flask
 from config import Config
-from .extensions import db, login_manager, bcrypt # Importamos las nuevas extensiones
+from .extensions import db, login_manager, bcrypt, migrate # Importamos las nuevas extensiones
 
 def create_app(config_class=Config):
     app = Flask(__name__)
@@ -12,6 +12,7 @@ def create_app(config_class=Config):
 
     # Inicializamos todas las extensiones
     db.init_app(app)
+    migrate.init_app(app,db)
     login_manager.init_app(app)
     bcrypt.init_app(app)
     
@@ -28,5 +29,9 @@ def create_app(config_class=Config):
         
         from .gestion import gestion_bp
         app.register_blueprint(gestion_bp, url_prefix='/gestion')
+
+            # -Registramos el módulo de reportes ---
+        from app.reportes import reportes_bp
+        app.register_blueprint(reportes_bp)
 
     return app
