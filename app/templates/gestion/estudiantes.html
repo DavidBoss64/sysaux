@@ -21,14 +21,25 @@
     </div>
 </div>
 
-<div class="card shadow-sm border-0 rounded-4">
+<div class="mb-3">
+    <div class="input-group shadow-sm rounded-3" style="max-width: 400px;">
+        <span class="input-group-text bg-white border-end-0 text-muted">
+            <i class="bi bi-search"></i>
+        </span>
+        <input type="text" id="buscadorEstudiantesLista" class="form-control border-start-0 shadow-none ps-0" 
+               placeholder="Buscar por apellido, nombre, C.I. o R.U....">
+    </div>
+</div>
+
+<div class="card shadow-sm border-0 rounded-4 overflow-hidden">
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
                     <tr>
-                        <th class="ps-4">N°</th>
-                        <th>Apellidos y Nombres</th>
+                        <th class="ps-4" style="width: 60px;">N°</th>
+                        <th>Apellidos</th>
+                        <th>Nombres</th>
                         <th>C.I.</th>
                         <th>R.U.</th>
                         <th>Fecha de Inscripción</th>
@@ -38,16 +49,16 @@
                 <tbody>
                     {% if inscripciones %}
                     {% for inscripcion in inscripciones %}
-                    <tr>
-                        <td class="ps-4 text-muted">{{ loop.index }}</td>
-                        <td class="fw-medium text-dark">{{ inscripcion.estudiante.apellidos }}, {{
-                            inscripcion.estudiante.nombres }}</td>
+                    <tr class="fila-estudiante">
+                        <td class="ps-4 text-muted fw-bold">{{ loop.index }}</td>
+                        <td class="fw-bold text-dark">{{ inscripcion.estudiante.apellidos }}</td>
+                        <td class="fw-medium text-secondary">{{ inscripcion.estudiante.nombres }}</td>
                         <td><code>{{ inscripcion.estudiante.ci }}</code></td>
                         <td>
                             {% if inscripcion.estudiante.ru %}
-                            <span class="badge bg-secondary">{{ inscripcion.estudiante.ru }}</span>
+                            <span class="badge bg-light text-dark border">{{ inscripcion.estudiante.ru }}</span>
                             {% else %}
-                            <span class="text-muted small">Sin RU</span>
+                            <span class="badge bg-warning bg-opacity-10 text-warning border border-warning-subtle">Pendiente</span>
                             {% endif %}
                         </td>
                         <td class="text-muted small">{{ inscripcion.fecha_inscripcion.strftime('%d-%m-%Y') }}</td>
@@ -83,28 +94,24 @@
                                         <div class="modal-body p-4">
                                             <div class="row g-3 mb-3">
                                                 <div class="col-md-6">
-                                                    <label class="form-label text-muted fw-semibold text-sm">Nombres
-                                                        *</label>
-                                                    <input type="text" class="form-control" name="nombres"
-                                                        value="{{ inscripcion.estudiante.nombres }}" required>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <label class="form-label text-muted fw-semibold text-sm">Apellidos
-                                                        *</label>
+                                                    <label class="form-label text-muted fw-semibold text-sm">Apellidos *</label>
                                                     <input type="text" class="form-control" name="apellidos"
                                                         value="{{ inscripcion.estudiante.apellidos }}" required>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label text-muted fw-semibold text-sm">Nombres *</label>
+                                                    <input type="text" class="form-control" name="nombres"
+                                                        value="{{ inscripcion.estudiante.nombres }}" required>
                                                 </div>
                                             </div>
                                             <div class="row g-3">
                                                 <div class="col-md-6">
-                                                    <label class="form-label text-muted fw-semibold text-sm">C.I.
-                                                        *</label>
+                                                    <label class="form-label text-muted fw-semibold text-sm">C.I. *</label>
                                                     <input type="text" class="form-control" name="ci"
                                                         value="{{ inscripcion.estudiante.ci }}" required>
                                                 </div>
                                                 <div class="col-md-6">
-                                                    <label
-                                                        class="form-label text-muted fw-semibold text-sm">R.U.</label>
+                                                    <label class="form-label text-muted fw-semibold text-sm">R.U.</label>
                                                     <input type="text" class="form-control" name="ru"
                                                         value="{{ inscripcion.estudiante.ru or '' }}">
                                                 </div>
@@ -123,11 +130,10 @@
                     {% endfor %}
                     {% else %}
                     <tr>
-                        <td colspan="6" class="text-center py-5 text-muted">
+                        <td colspan="7" class="text-center py-5 text-muted">
                             <i class="bi bi-person-bounding-box display-6 d-block mb-3 text-secondary opacity-50"></i>
                             <h5>No hay estudiantes inscritos</h5>
-                            <p class="text-sm">Comparte el código de inscripción <strong>{{ paralelo.codigo_inscripcion
-                                    or 'N/A' }}</strong> o inscribe alumnos manualmente.</p>
+                            <p class="text-sm">Comparte el código de inscripción <strong>{{ paralelo.codigo_inscripcion or 'N/A' }}</strong> o inscribe alumnos manualmente.</p>
                         </td>
                     </tr>
                     {% endif %}
@@ -149,41 +155,55 @@
             <form method="POST" action="{{ url_for('gestion.estudiantes', id=paralelo.id) }}">
                 <div class="modal-body p-4">
                     <div class="alert alert-info text-sm py-2">
-                        <i class="bi bi-info-circle me-1"></i> Si el estudiante es nuevo, su usuario y contraseña serán
-                        su número de C.I.
+                        <i class="bi bi-info-circle me-1"></i> Si el estudiante es nuevo, su usuario y contraseña serán su número de C.I.
                     </div>
 
                     <div class="row g-3 mb-3">
                         <div class="col-md-6">
-                            <label class="form-label text-muted fw-semibold text-sm">Nombres *</label>
-                            <input type="text" class="form-control" name="nombres" required autocomplete="off">
-                        </div>
-                        <div class="col-md-6">
                             <label class="form-label text-muted fw-semibold text-sm">Apellidos *</label>
                             <input type="text" class="form-control" name="apellidos" required autocomplete="off">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted fw-semibold text-sm">Nombres *</label>
+                            <input type="text" class="form-control" name="nombres" required autocomplete="off">
                         </div>
                     </div>
 
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label class="form-label text-muted fw-semibold text-sm">Carnet de Identidad (C.I.)
-                                *</label>
+                            <label class="form-label text-muted fw-semibold text-sm">Carnet de Identidad (C.I.) *</label>
                             <input type="text" class="form-control" name="ci" required autocomplete="off">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label text-muted fw-semibold text-sm">Registro Universitario
-                                (R.U.)</label>
+                            <label class="form-label text-muted fw-semibold text-sm">Registro Universitario (R.U.)</label>
                             <input type="text" class="form-control" name="ru" placeholder="Opcional" autocomplete="off">
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer bg-light rounded-bottom-4 border-top-0 py-3">
-                    <button type="button" class="btn btn-outline-secondary px-4"
-                        data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Cancelar</button>
                     <button type="submit" class="btn btn-primary px-4 fw-bold">Inscribir Alumno</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('buscadorEstudiantesLista').addEventListener('keyup', function() {
+    let filtro = this.value.toLowerCase().trim();
+    let filas = document.querySelectorAll('.fila-estudiante');
+
+    filas.forEach(function(fila) {
+        let textoFila = fila.textContent.toLowerCase();
+        if (textoFila.includes(filtro)) {
+            fila.style.display = '';
+        } else {
+            fila.style.display = 'none';
+        }
+    });
+});
+</script>
 {% endblock %}

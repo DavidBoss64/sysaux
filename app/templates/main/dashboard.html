@@ -3,86 +3,63 @@
 {% block title %}Inicio - SysAux{% endblock %}
 
 {% block content %}
-    {% if current_user.is_authenticated %}
-        <div class="row mb-4">
-            <div class="col-12">
-                <div class="card shadow-sm border-0 rounded-4 bg-primary text-white">
-                    <div class="card-body p-4 d-flex align-items-center">
-                        <div class="bg-white bg-opacity-25 rounded-circle p-3 me-4">
-                            <i class="bi bi-person-badge fs-1"></i>
-                        </div>
-                        <div>
-                            <h2 class="fw-bold mb-1">¡Hola, {{ current_user.nombres }}!</h2>
-                            <p class="mb-0 fs-5 text-white-50">
-                                Gestión Activa: <span class="badge bg-light text-primary">{{ current_user.rol.nombre }}</span>
-                            </p>
-                        </div>
+<div class="text-center mb-5 mt-4">
+    <h1 class="fw-bolder text-dark display-5">Bienvenido a SysAux</h1>
+    <p class="text-muted lead">Sistema integral de gestión académica para paralelos de Matemática Discreta.</p>
+</div>
+
+<div class="row g-4 justify-content-center">
+    
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100 shadow-sm border-0 rounded-4 border-top border-primary border-4 text-center p-3">
+            <div class="card-body d-flex flex-column">
+                <div class="mb-3">
+                    <div class="d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary rounded-circle" style="width: 64px; height: 64px;">
+                        <i class="bi bi-gear-fill fs-3"></i>
                     </div>
                 </div>
-            </div>
-        </div>
-
-        <h4 class="fw-bold text-dark mb-3"><i class="bi bi-grid-1x2-fill text-secondary me-2"></i>Paneles de Control</h4>
-
-        <div class="row g-4">
-            <div class="col-md-4">
-                <div class="card shadow-sm border-0 h-100 border-top border-primary border-3">
-                    <div class="card-body p-4 d-flex flex-column justify-content-between">
-                        <div>
-                            <div class="text-primary mb-3"><i class="bi bi-sliders fs-2"></i></div>
-                            <h4 class="fw-bold text-dark">Configuración Base</h4>
-                            <p class="text-muted small">Administra la creación de tus paralelos, asigna las ponderaciones de los 10 puntos y gestiona las inscripciones manuales o bajas de alumnos.</p>
-                        </div>
-                        <a href="{{ url_for('gestion.paralelos') }}" class="btn btn-outline-primary btn-sm w-100 mt-3 rounded-3 fw-semibold">
-                            <i class="bi bi-gear-fill me-1"></i> Configurar Cursos
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-md-4">
-                <div class="card shadow-sm border-0 h-100 border-top border-success border-3">
-                    <div class="card-body p-4 d-flex flex-column justify-content-between">
-                        <div>
-                            <div class="text-success mb-3"><i class="bi bi-calendar-check fs-2"></i></div>
-                            <h4 class="fw-bold text-dark">Asistencias y Prácticas</h4>
-                            <p class="text-muted small">Crea las actividades del día a día, abre el portal para el auto-registro de asistencia con código secreto en clase o califica las prácticas entregadas.</p>
-                        </div>
-                        <a href="{{ url_for('gestion.panel_operativo') }}" class="btn btn-outline-success btn-sm w-100 mt-3 rounded-3 fw-semibold">
-                            <i class="bi bi-play-circle-fill me-1"></i> Ir al Día a Día
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-md-4">
-                <div class="card shadow-sm border-0 h-100 border-top border-warning border-3">
-                    <div class="card-body p-4 d-flex flex-column justify-content-between">
-                        <div>
-                            <div class="text-warning mb-3"><i class="bi bi-file-earmark-spreadsheet fs-2"></i></div>
-                            <h4 class="fw-bold text-dark">Centralizador de Notas</h4>
-                            <p class="text-muted small">Visualiza la sábana completa de calificaciones acumuladas proporcionalmente sobre los 10 puntos y exporta las planillas oficiales a Excel.</p>
-                        </div>
-                        <a href="#" class="btn btn-outline-warning btn-sm w-100 mt-3 rounded-3 fw-semibold">
-                            <i class="bi bi-download me-1"></i> Ver Centralizador
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-    {% else %}
-        <div class="row justify-content-center align-items-center text-center mt-5">
-            <div class="col-lg-8">
-                <i class="bi bi-laptop text-primary" style="font-size: 5rem;"></i>
-                <h1 class="display-4 fw-bold text-dark mt-3">Sistema de Gestión Académica</h1>
-                <p class="lead text-muted mt-3 mb-4">
-                    Plataforma para el control de calificaciones, asistencias y administración de paralelos.
-                </p>
-                <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-lg px-5 rounded-pill shadow-sm">
-                    Ingresar al Sistema
+                <h4 class="fw-bold text-dark">Configuración Base</h4>
+                <p class="text-muted small mb-4">Administra tus paralelos (1RO A, 1RO B), inscribe estudiantes y define los parámetros de evaluación.</p>
+                <a href="{{ url_for('gestion.paralelos') }}" class="btn btn-outline-primary mt-auto fw-medium rounded-3">
+                    Ingresar al Módulo
                 </a>
             </div>
         </div>
-    {% endif %}
-{% endblock %}
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100 shadow-sm border-0 rounded-4 border-top border-warning border-4 text-center p-3">
+            <div class="card-body d-flex flex-column">
+                <div class="mb-3">
+                    <div class="d-inline-flex align-items-center justify-content-center bg-warning bg-opacity-10 text-warning rounded-circle" style="width: 64px; height: 64px;">
+                        <i class="bi bi-clipboard2-check-fill fs-3"></i>
+                    </div>
+                </div>
+                <h4 class="fw-bold text-dark">Panel Operativo</h4>
+                <p class="text-muted small mb-4">Controla el día a día: registra nuevas asistencias, califica prácticas y revisa el progreso continuo.</p>
+                <a href="{{ url_for('gestion.panel_operativo') }}" class="btn btn-outline-warning text-dark mt-auto fw-medium rounded-3">
+                    Ingresar al Módulo
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100 shadow-sm border-0 rounded-4 border-top border-success border-4 text-center p-3">
+            <div class="card-body d-flex flex-column">
+                <div class="mb-3">
+                    <div class="d-inline-flex align-items-center justify-content-center bg-success bg-opacity-10 text-success rounded-circle" style="width: 64px; height: 64px;">
+                        <i class="bi bi-file-earmark-spreadsheet-fill fs-3"></i>
+                    </div>
+                </div>
+                <h4 class="fw-bold text-dark">Reportes y Notas</h4>
+                <p class="text-muted small mb-4">Visualiza el centralizador, procesa el examen de liberación y exporta las planillas Excel oficiales.</p>
+                <a href="{{ url_for('reportes.selector') }}" class="btn btn-outline-success mt-auto fw-medium rounded-3">
+                    Ingresar al Módulo
+                </a>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}s 

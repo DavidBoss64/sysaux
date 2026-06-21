@@ -15,7 +15,9 @@ def calificar_actividad(id):
         flash('Acceso denegado.', 'danger')
         return redirect(url_for('gestion.paralelos'))
 
-    inscripciones = Inscripcion.query.filter_by(paralelo_id=paralelo.id, estado=True).all()
+    # Consultamos las inscripciones activas y las ordenamos exactamente igual que en los reportes
+    inscripciones_bd = Inscripcion.query.filter_by(paralelo_id=paralelo.id, estado=True).all()
+    inscripciones = sorted(inscripciones_bd, key=lambda i: (i.estudiante.apellidos, i.estudiante.nombres))
     calificaciones_bd = Calificacion.query.filter_by(actividad_id=actividad.id).all()
     notas_actuales = {c.estudiante_id: c.puntaje for c in calificaciones_bd}
 

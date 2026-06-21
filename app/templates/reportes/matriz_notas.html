@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+
+{% block title %}Centralizador - {{ paralelo.nombre }} - SysAux{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <a href="{{ url_for('reportes.selector') }}" class="btn btn-outline-secondary btn-sm mb-2">
+            <i class="bi bi-arrow-left"></i> Volver a Paralelos
+        </a>
+        <h2 class="fw-bold text-dark mb-0"><i class="bi bi-table text-primary me-2"></i>Centralizador de Calificaciones</h2>
+        <h5 class="text-muted mt-1">{{ paralelo.materia.nombre }} - Paralelo {{ paralelo.nombre }}</h5>
+    </div>
+    
+    <a href="{{ url_for('reportes.exportar_excel', id=paralelo.id) }}" class="btn btn-success shadow-sm fw-bold px-4">
+        <i class="bi bi-file-earmark-excel-fill me-2"></i>Exportar Planilla
+    </a>
+</div>
+
+<div class="mb-4">
+    <div class="input-group shadow-sm rounded-3" style="max-width: 400px;">
+        <span class="input-group-text bg-white border-end-0 text-muted">
+            <i class="bi bi-search"></i>
+        </span>
+        <input type="text" id="buscadorCentralizador" class="form-control border-start-0 shadow-none ps-0" 
+               placeholder="Buscar estudiante en este paralelo...">
+    </div>
+</div>
+
+<ul class="nav nav-tabs fw-semibold mb-4 border-bottom-0" id="reporteTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active text-dark bg-white border border-bottom-0 rounded-top-3 shadow-sm" id="resumen-tab" data-bs-toggle="tab" data-bs-target="#resumen" type="button" role="tab">
+            <i class="bi bi-journal-check text-success me-1"></i> Sábana Oficial
+        </button>
+    </li>
+    <li class="nav-item ms-2" role="presentation">
+        <button class="nav-link text-dark bg-light border border-bottom-0 rounded-top-3" id="detalle-tab" data-bs-toggle="tab" data-bs-target="#detalle" type="button" role="tab">
+            <i class="bi bi-list-columns-reverse text-primary me-1"></i> Desglose de Transparencia
+        </button>
+    </li>
+</ul>
+
+<div class="tab-content" id="reporteTabsContent">
+    
+    <div class="tab-pane fade show active" id="resumen" role="tabpanel">
+        <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+            <div class="table-responsive">
+                <table class="table table-hover table-striped align-middle mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th class="ps-4">N°</th>
+                            <th>Apellidos</th>
+                            <th>Nombres</th>
+                            <th>C.I.</th>
+                            <th>R.U.</th>
+                            {% for param in parametros_regulares %}
+                                <th class="text-center border-start border-secondary">{{ param.nombre_parametro }}<br><small class="fw-normal text-white-50">({{ param.ponderacion }} pts)</small></th>
+                            {% endfor %}
+                            <th class="text-center text-warning border-start border-secondary">Semestre<br><small class="fw-normal text-white-50">(Total)</small></th>
+                            
+                            {% if param_liberacion %}
+                                <th class="text-center text-danger border-start border-danger">Liberación<br><small class="fw-normal text-white-50">({{ param_liberacion.ponderacion }} pts)</small></th>
+                            {% endif %}
+                            
+                            <th class="text-center bg-success text-white border-start border-light pe-4">NOTA FINAL<br><small class="fw-normal text-white-50">(Máx. {{ paralelo.nota_maxima }} pts)</small></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for fila in matriz %}
+                        <tr class="fila-estudiante">
+                            <td class="ps-4 text-muted fw-bold">{{ loop.index }}</td>
+                            <td class="fw-bold text-dark">{{ fila.estudiante.apellidos }}</td>
+                            <td class="fw-medium text-secondary">{{ fila.estudiante.nombres }}</td>
+                            <td class="text-muted small"><code>{{ fila.estudiante.ci }}</code></td>
+                            <td class="text-secondary small">
+                                {% if fila.estudiante.ru %}
+                                    <span class="badge bg-light text-dark border">{{ fila.estudiante.ru }}</span>
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                                                            
+                            {% for param in parametros_regulares %}
+                                <td class="text-center border-start">{{ fila.notas_regulares[param.id] }}</td>
+                            {% endfor %}
+                            
+                            <td class="text-center fw-semibold text-warning-emphasis bg-warning bg-opacity-10 border-start">{{ fila.nota_semestre }}</td>
+                            
+                            {% if param_liberacion %}
+                                <td class="text-center text-danger border-start border-danger fw-bold bg-danger bg-opacity-10">
+                                    {% if fila.nota_liberacion is not none and fila.nota_liberacion > 0 %}
+                                        {{ fila.nota_liberacion }}
+                                    {% else %}
+                                        <span class="text-muted small">-</span>
+                                    {% endif %}
+                                </td>
+                            {% endif %}
+                            
+                            <td class="text-center fw-bolder fs-5 text-success bg-success bg-opacity-10 border-start border-success pe-4">
+                                {{ fila.nota_final }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-pane fade" id="detalle" role="tabpanel">
+        <div class="alert alert-primary py-2 text-sm border-0 shadow-sm mb-3 d-flex align-items-center">
+            <i class="bi bi-info-circle-fill fs-5 me-3"></i> 
+            <div>
+                <strong>Vista de Auditoría:</strong> Registros base de cada actividad junto con los subtotales por categoría y totales acumulados al extremo derecho.
+            </div>
+        </div>
+        <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+            <div class="table-responsive">
+                <table class="table table-hover table-bordered table-sm align-middle mb-0" style="font-size: 0.85rem;">
+                    <thead class="table-light align-middle">
+                        <tr>
+                            <th colspan="5" class="border-end border-bottom-0 bg-white"></th>
+                            {% for param in parametros_regulares %}
+                                <th colspan="{{ param.actividades|length + 1 }}" class="text-center bg-secondary text-white border-end">{{ param.nombre_parametro|upper }}</th>
+                            {% endfor %}
+                            {% if param_liberacion %}
+                                <th colspan="{{ param_liberacion.actividades|length + 1 }}" class="text-center bg-danger bg-opacity-75 text-white border-end">EX. LIBERACIÓN</th>
+                            {% endif %}
+                            <th colspan="{% if param_liberacion %}3{% else %}2{% endif %}" class="text-center bg-dark text-white">CONSOLIDADO FINAL</th>
+                        </tr>
+                        <tr>
+                            <th class="ps-4 bg-white py-2">N°</th>
+                            <th class="bg-white py-2">Apellidos</th>
+                            <th class="bg-white py-2">Nombres</th>
+                            <th class="bg-white py-2">C.I.</th>
+                            <th class="bg-white border-end py-2">R.U.</th>
+                            
+                            {% for param in parametros_regulares %}
+                                {% for act in param.actividades %}
+                                    <th class="text-center text-muted fw-normal bg-light" title="{{ act.titulo }}">{{ act.fecha.strftime('%d/%m') }}</th>
+                                {% endfor %}
+                                <th class="text-center text-primary fw-bold bg-primary bg-opacity-10 border-end border-2" style="min-width: 70px;">Total<br><small>({{ param.ponderacion }} pts)</small></th>
+                            {% endfor %}
+                            
+                            {% if param_liberacion %}
+                                {% for act in param_liberacion.actividades %}
+                                    <th class="text-center text-danger fw-normal bg-danger bg-opacity-10" title="{{ act.titulo }}">{{ act.fecha.strftime('%d/%m') }}</th>
+                                {% endfor %}
+                                <th class="text-center text-danger fw-bold bg-danger bg-opacity-25 border-end border-2" style="min-width: 70px;">Total Lib.<br><small>({{ param_liberacion.ponderacion }} pts)</small></th>
+                            {% endif %}
+                            
+                            <th class="text-center bg-warning bg-opacity-10 text-dark fw-bold" style="min-width: 80px;">Semestre</th>
+                            {% if param_liberacion %}
+                                <th class="text-center bg-danger bg-opacity-10 text-danger fw-bold" style="min-width: 80px;">Liberación</th>
+                            {% endif %}
+                            <th class="text-center bg-success text-white fw-bold pe-3" style="min-width: 90px;">NOTA FINAL</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for fila in matriz %}
+                        <tr class="fila-estudiante">
+                            <td class="ps-4 text-muted fw-bold">{{ loop.index }}</td>
+                            <td class="fw-bold text-dark">{{ fila.estudiante.apellidos }}</td>
+                            <td class="fw-medium text-secondary">{{ fila.estudiante.nombres }}</td>
+                            <td class="text-muted small"><code>{{ fila.estudiante.ci }}</code></td>
+                            <td class="text-secondary small border-end border-2">
+                                {% if fila.estudiante.ru %}
+                                    {{ fila.estudiante.ru }}
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            
+                            {% for param in parametros_regulares %}
+                                {% for act in param.actividades %}
+                                    <td class="text-center fw-medium text-secondary">{{ fila.detalle_actividades[act.id] }}</td>
+                                {% endfor %}
+                                <td class="text-center fw-bold text-primary bg-primary bg-opacity-10 border-end border-2">{{ fila.notas_regulares[param.id] }}</td>
+                            {% endfor %}
+                            
+                            {% if param_liberacion %}
+                                {% for act in param_liberacion.actividades %}
+                                    <td class="text-center text-danger fw-bold bg-danger bg-opacity-10">{{ fila.detalle_actividades[act.id] }}</td>
+                                {% endfor %}
+                                <td class="text-center text-danger fw-bolder bg-danger bg-opacity-25 border-end border-2">
+                                    {% if fila.nota_liberacion is not none and fila.nota_liberacion > 0 %}
+                                        {{ fila.nota_liberacion }}
+                                    {% else %}
+                                        <span class="text-danger opacity-50">-</span>
+                                    {% endif %}
+                                </td>
+                            {% endif %}
+                            
+                            <td class="text-center fw-semibold text-dark bg-warning bg-opacity-10">{{ fila.nota_semestre }}</td>
+                            
+                            {% if param_liberacion %}
+                                <td class="text-center text-danger fw-bold bg-danger bg-opacity-10">
+                                    {% if fila.nota_liberacion is not none and fila.nota_liberacion > 0 %}
+                                        {{ fila.nota_liberacion }}
+                                    {% else %}
+                                        <span class="text-muted opacity-50">-</span>
+                                    {% endif %}
+                                </td>
+                            {% endif %}
+                            
+                            <td class="text-center fw-bolder text-success bg-success bg-opacity-10 pe-3">{{ fila.nota_final }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('buscadorCentralizador').addEventListener('keyup', function() {
+    let filtro = this.value.toLowerCase().trim();
+    let filas = document.querySelectorAll('.fila-estudiante');
+
+    filas.forEach(function(fila) {
+        let textoFila = fila.textContent.toLowerCase();
+        if (textoFila.includes(filtro)) {
+            fila.style.display = '';
+        } else {
+            fila.style.display = 'none';
+        }
+    });
+});
+</script>
+{% endblock %}

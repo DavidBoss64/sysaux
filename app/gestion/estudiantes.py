@@ -55,7 +55,9 @@ def estudiantes(id):
         db.session.commit()
         return redirect(url_for('gestion.estudiantes', id=id))
 
-    inscripciones = Inscripcion.query.filter_by(paralelo_id=id, estado=True).all()
+    # Consultamos las inscripciones activas y las ordenamos alfabéticamente por el apellido del estudiante
+    inscripciones_bd = Inscripcion.query.filter_by(paralelo_id=id, estado=True).all()
+    inscripciones = sorted(inscripciones_bd, key=lambda i: (i.estudiante.apellidos, i.estudiante.nombres))
     return render_template('gestion/estudiantes.html', paralelo=paralelo, inscripciones=inscripciones)
 
 @gestion_bp.route('/estudiante/<int:id>/editar', methods=['POST'])

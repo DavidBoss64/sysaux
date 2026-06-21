@@ -8,8 +8,7 @@
     <i class="bi bi-arrow-left"></i> Volver a Actividades
     </a>
     <h2 class="fw-bold text-dark"><i class="bi bi-ui-checks text-success me-2"></i>Calificar Actividad</h2>
-    <h5 class="text-muted">{{ actividad.titulo }} <span class="badge bg-primary ms-2">Máximo: {{
-            actividad.parametro.ponderacion }} pts</span></h5>
+    <h5 class="text-muted">{{ actividad.titulo }} <span class="badge bg-primary ms-2">Máximo: {{ actividad.parametro.ponderacion }} pts</span></h5>
     <p class="text-sm mb-0">Paralelo: <strong>{{ paralelo.nombre }}</strong> ({{ paralelo.materia.nombre }})</p>
 </div>
 
@@ -23,27 +22,36 @@
     </div>
 </div>
 
-<div class="card shadow-sm border-0 rounded-4">
+<div class="card shadow-sm border-0 rounded-4 overflow-hidden">
     <form method="POST" action="{{ url_for('gestion.calificar_actividad', id=actividad.id) }}">
         <div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
                     <thead class="table-light">
                         <tr>
-                            <th class="ps-4">N°</th>
-                            <th>Estudiante</th>
+                            <th class="ps-4" style="width: 60px;">N°</th>
+                            <th>Apellidos</th>
+                            <th>Nombres</th>
                             <th>C.I.</th>
-                            <th class="text-end pe-4" style="width: 200px;">Puntaje Asignado</th>
+                            <th>R.U.</th>
+                            <th class="text-end pe-4" style="width: 220px;">Puntaje Asignado</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% if inscripciones %}
                         {% for inscripcion in inscripciones %}
                         <tr class="fila-estudiante">
-                            <td class="ps-4 text-muted">{{ loop.index }}</td>
-                            <td class="fw-medium text-dark">{{ inscripcion.estudiante.apellidos }}, {{
-                                inscripcion.estudiante.nombres }}</td>
+                            <td class="ps-4 text-muted fw-bold">{{ loop.index }}</td>
+                            <td class="fw-bold text-dark">{{ inscripcion.estudiante.apellidos }}</td>
+                            <td class="fw-medium text-secondary">{{ inscripcion.estudiante.nombres }}</td>
                             <td><code>{{ inscripcion.estudiante.ci }}</code></td>
+                            <td>
+                                {% if inscripcion.estudiante.ru %}
+                                    <span class="badge bg-light text-dark border">{{ inscripcion.estudiante.ru }}</span>
+                                {% else %}
+                                    <span class="text-muted small">-</span>
+                                {% endif %}
+                            </td>
                             <td class="text-end pe-4">
                                 {% if tipo_parametro == 'asistencia' %}
                                 <div class="form-check form-switch d-flex justify-content-end">
@@ -57,8 +65,7 @@
                                         class="form-control form-control-sm text-end shadow-none"
                                         style="max-width: 90px;" name="nota_{{ inscripcion.estudiante.id }}"
                                         value="{{ notas.get(inscripcion.estudiante.id, '') }}" placeholder="0.0">
-                                    <span class="input-group-text bg-light text-muted">/ {{
-                                        actividad.parametro.ponderacion }}</span>
+                                    <span class="input-group-text bg-light text-muted">/ {{ actividad.parametro.ponderacion }}</span>
                                 </div>
                                 {% endif %}
                             </td>
@@ -66,7 +73,7 @@
                         {% endfor %}
                         {% else %}
                         <tr>
-                            <td colspan="4" class="text-center py-5 text-muted">
+                            <td colspan="6" class="text-center py-5 text-muted">
                                 <i class="bi bi-person-x display-6 d-block mb-3 text-secondary opacity-50"></i>
                                 <h5>No hay estudiantes inscritos</h5>
                                 <p class="text-sm">Inscribe alumnos en el paralelo para poder calificarlos.</p>
@@ -78,8 +85,7 @@
             </div>
         </div>
         <div class="card-footer bg-light border-top-0 py-3 text-end rounded-bottom-4">
-            <button type="submit" class="btn btn-success fw-bold px-4 shadow-sm" {% if not inscripciones %}disabled{%
-                endif %}>
+            <button type="submit" class="btn btn-success fw-bold px-4 shadow-sm" {% if not inscripciones %}disabled{% endif %}>
                 <i class="bi bi-floppy me-2"></i>Guardar Calificaciones
             </button>
         </div>
@@ -87,16 +93,15 @@
 </div>
 {% endblock %}
 
+{% block scripts %}
 <script>
 document.getElementById('buscadorEstudiante').addEventListener('keyup', function() {
     let filtro = this.value.toLowerCase().trim();
     let filas = document.querySelectorAll('.fila-estudiante');
 
     filas.forEach(function(fila) {
-        // Obtenemos todo el texto de la fila (Nombre, Apellidos, CI)
         let textoFila = fila.textContent.toLowerCase();
         
-        // Si el texto incluye lo que estamos buscando, se muestra; si no, se oculta
         if (textoFila.includes(filtro)) {
             fila.style.display = '';
         } else {
@@ -105,3 +110,4 @@ document.getElementById('buscadorEstudiante').addEventListener('keyup', function
     });
 });
 </script>
+{% endblock %}
