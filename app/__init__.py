@@ -42,4 +42,6 @@ def create_app(config_class=Config):
         from app.configuracion import configuracion_bp
         app.register_blueprint(configuracion_bp, url_prefix='/configuracion')
 
+        from app.papelera import papelera_bp
+        app.register_blueprint(papelera_bp)
     return app

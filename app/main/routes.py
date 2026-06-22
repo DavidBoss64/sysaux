@@ -31,8 +31,8 @@ def index():
                 # Sumo las actividades activas dentro de cada parámetro
                 total_actividades += len([act for act in param.actividades if act.estado])
                 
-        # Inyecto las variables al renderizar el template
-        return render_template('index.html', 
+       # Inyecto las variables al renderizar el template desde su nueva ubicación
+        return render_template('main/index.html', 
                                total_paralelos=total_paralelos,
                                total_estudiantes=total_estudiantes,
                                total_actividades=total_actividades)

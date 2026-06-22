@@ -4,4 +4,4 @@ from flask import Blueprint
 gestion_bp = Blueprint('gestion', __name__)
 
 # Importamos los submódulos ordenados
-from . import paralelos, parametros, estudiantes, actividades, papelera, calificaciones, panel_operativo
+from . import paralelos, parametros, estudiantes, actividades, calificaciones, panel_operativo
