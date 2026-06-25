@@ -22,6 +22,13 @@ def exportar_excel(id):
     parametros_evaluacion = [p for p in parametros if p.tipo != 'liberacion']
     param_liberacion = next((p for p in parametros if p.tipo == 'liberacion'), None)
 
+    # FILTRO ESTRICTO AL EXCEL
+    for param in parametros_evaluacion:
+        param.actividades_activas = Actividad.query.filter_by(parametro_id=param.id, estado=True).order_by(Actividad.fecha).all()
+    
+    if param_liberacion:
+        param_liberacion.actividades_activas = Actividad.query.filter_by(parametro_id=param_liberacion.id, estado=True).order_by(Actividad.fecha).all()
+
     matriz = []
     for estudiante in estudiantes:
         fila = {
@@ -37,17 +44,16 @@ def exportar_excel(id):
         nota_extra = 0.0
 
         for param in parametros_evaluacion:
-            actividades = Actividad.query.filter_by(parametro_id=param.id, estado=True).all()
             suma_puntajes_100 = 0.0
             
-            for act in actividades:
+            for act in param.actividades_activas:
                 calif = Calificacion.query.filter_by(actividad_id=act.id, estudiante_id=estudiante.id, estado=True).first()
                 puntaje = calif.puntaje if calif else 0.0
                 fila['detalle_actividades'][act.id] = puntaje
                 suma_puntajes_100 += puntaje
 
-            if len(actividades) > 0:
-                promedio_100 = suma_puntajes_100 / len(actividades)
+            if len(param.actividades_activas) > 0:
+                promedio_100 = suma_puntajes_100 / len(param.actividades_activas)
                 nota_convertida = (promedio_100 / 100.0) * param.ponderacion
             else:
                 nota_convertida = 0.0
@@ -63,7 +69,7 @@ def exportar_excel(id):
         fila['nota_semestre'] = round(min(nota_semestre_bruta, paralelo.nota_maxima), 2)
 
         if param_liberacion:
-            actividades_lib = Actividad.query.filter_by(parametro_id=param_liberacion.id, estado=True).first()
+            actividades_lib = param_liberacion.actividades_activas[0] if param_liberacion.actividades_activas else None
             if actividades_lib:
                 calif_lib = Calificacion.query.filter_by(actividad_id=actividades_lib.id, estudiante_id=estudiante.id, estado=True).first()
                 puntaje_lib_100 = calif_lib.puntaje if calif_lib else 0.0
@@ -84,12 +90,9 @@ def exportar_excel(id):
         else:
             fila['nota_final'] = fila['nota_semestre']
             
-        # REDONDEO ACADÉMICO PARA LA NOTA FINAL EN EXCEL
         fila['nota_final'] = int(fila['nota_final'] + 0.5)
-        
         matriz.append(fila)
 
-    # 2. Configurar OpenPyXL con Diseño Premium
     wb = Workbook()
     
     font_bold = Font(bold=True)
@@ -117,9 +120,6 @@ def exportar_excel(id):
     def aplicar_borde(celda):
         celda.border = border_all
 
-    # =========================================================================
-    # HOJA 1: SÁBANA OFICIAL
-    # =========================================================================
     ws1 = wb.active
     ws1.title = "Sábana Oficial"
     
@@ -199,9 +199,6 @@ def exportar_excel(id):
     for c in range(6, total_cols_ws1 + 1):
         ws1.column_dimensions[chr(64 + c)].width = 15
 
-    # =========================================================================
-    # HOJA 2: DESGLOSE DE AUDITORÍA
-    # =========================================================================
     ws2 = wb.create_sheet(title="Desglose de Auditoría")
     ws2.freeze_panes = "F3" 
 
@@ -215,7 +212,7 @@ def exportar_excel(id):
     
     current_col = 6
     for param in parametros_evaluacion:
-        largo = len(param.actividades) + 1 
+        largo = len(param.actividades_activas) + 1 
         ws2.merge_cells(start_row=1, start_column=current_col, end_row=1, end_column=current_col + largo - 1)
         celda = ws2.cell(row=1, column=current_col, value=param.nombre_parametro.upper())
         celda.alignment = align_center
@@ -225,7 +222,7 @@ def exportar_excel(id):
         current_col += largo
             
     if param_liberacion:
-        largo = len(param_liberacion.actividades) + 1 
+        largo = len(param_liberacion.actividades_activas) + 1 
         ws2.merge_cells(start_row=1, start_column=current_col, end_row=1, end_column=current_col + largo - 1)
         celda = ws2.cell(row=1, column=current_col, value="EXAMEN LIBERACIÓN")
         celda.alignment = align_center
@@ -247,7 +244,7 @@ def exportar_excel(id):
         
     current_col = 6
     for param in parametros_evaluacion:
-        for act in param.actividades:
+        for act in param.actividades_activas:
             fecha_str = act.fecha.strftime('%d/%m')
             celda = ws2.cell(row=2, column=current_col, value=f"{act.titulo}\n({fecha_str})\n[Sobre 100]")
             celda.alignment = align_center
@@ -266,7 +263,7 @@ def exportar_excel(id):
         current_col += 1
 
     if param_liberacion:
-        for act in param_liberacion.actividades:
+        for act in param_liberacion.actividades_activas:
             fecha_str = act.fecha.strftime('%d/%m')
             celda = ws2.cell(row=2, column=current_col, value=f"{act.titulo}\n({fecha_str})\n[Sobre 100]")
             celda.alignment = align_center
@@ -317,7 +314,8 @@ def exportar_excel(id):
         
         col_idx = 6
         for param in parametros_evaluacion:
-            for act in param.actividades:
+            for act in param.actividades_activas:
+                # USO DE .GET() COMO ESCUDO ADICIONAL
                 c_nota = ws2.cell(row=i, column=col_idx, value=fila['detalle_actividades'].get(act.id, 0.0))
                 c_nota.alignment = align_center
                 c_nota.fill = bg_color
@@ -332,8 +330,8 @@ def exportar_excel(id):
             col_idx += 1
                 
         if param_liberacion:
-            for act in param_liberacion.actividades:
-                c_lib = ws2.cell(row=i, column=col_idx, value=fila['detalle_actividades'][act.id])
+            for act in param_liberacion.actividades_activas:
+                c_lib = ws2.cell(row=i, column=col_idx, value=fila['detalle_actividades'].get(act.id, 0.0))
                 c_lib.alignment = align_center
                 c_lib.fill = bg_color
                 aplicar_borde(c_lib)

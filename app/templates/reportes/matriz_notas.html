@@ -121,10 +121,10 @@
                         <tr>
                             <th colspan="5" class="border-end border-bottom-0 bg-white"></th>
                             {% for param in parametros_regulares %}
-                                <th colspan="{{ param.actividades|length + 1 }}" class="text-center bg-secondary text-white border-end">{{ param.nombre_parametro|upper }}</th>
+                                <th colspan="{{ param.actividades_activas|length + 1 }}" class="text-center bg-secondary text-white border-end">{{ param.nombre_parametro|upper }}</th>
                             {% endfor %}
                             {% if param_liberacion %}
-                                <th colspan="{{ param_liberacion.actividades|length + 1 }}" class="text-center bg-danger bg-opacity-75 text-white border-end">EX. LIBERACIÓN</th>
+                                <th colspan="{{ param_liberacion.actividades_activas|length + 1 }}" class="text-center bg-danger bg-opacity-75 text-white border-end">EX. LIBERACIÓN</th>
                             {% endif %}
                             <th colspan="{% if param_liberacion %}3{% else %}2{% endif %}" class="text-center bg-dark text-white">CONSOLIDADO FINAL</th>
                         </tr>
@@ -136,14 +136,14 @@
                             <th class="bg-white border-end py-2">R.U.</th>
                             
                             {% for param in parametros_regulares %}
-                                {% for act in param.actividades %}
+                                {% for act in param.actividades_activas %}
                                     <th class="text-center text-muted fw-normal bg-light" title="{{ act.titulo }}">{{ act.fecha.strftime('%d/%m') }}</th>
                                 {% endfor %}
                                 <th class="text-center text-primary fw-bold bg-primary bg-opacity-10 border-end border-2" style="min-width: 70px;">Total<br><small>({{ param.ponderacion }} pts)</small></th>
                             {% endfor %}
                             
                             {% if param_liberacion %}
-                                {% for act in param_liberacion.actividades %}
+                                {% for act in param_liberacion.actividades_activas %}
                                     <th class="text-center text-danger fw-normal bg-danger bg-opacity-10" title="{{ act.titulo }}">{{ act.fecha.strftime('%d/%m') }}</th>
                                 {% endfor %}
                                 <th class="text-center text-danger fw-bold bg-danger bg-opacity-25 border-end border-2" style="min-width: 70px;">Total Lib.<br><small>({{ param_liberacion.ponderacion }} pts)</small></th>
@@ -172,15 +172,15 @@
                             </td>
                             
                             {% for param in parametros_regulares %}
-                                {% for act in param.actividades %}
-                                    <td class="text-center fw-medium text-secondary">{{ fila.detalle_actividades[act.id] }}</td>
+                                {% for act in param.actividades_activas %}
+                                    <td class="text-center fw-medium text-secondary">{{ fila.detalle_actividades.get(act.id, 0.0) }}</td>
                                 {% endfor %}
                                 <td class="text-center fw-bold text-primary bg-primary bg-opacity-10 border-end border-2">{{ fila.notas_regulares[param.id] }}</td>
                             {% endfor %}
                             
                             {% if param_liberacion %}
-                                {% for act in param_liberacion.actividades %}
-                                    <td class="text-center text-danger fw-bold bg-danger bg-opacity-10">{{ fila.detalle_actividades[act.id] }}</td>
+                                {% for act in param_liberacion.actividades_activas %}
+                                    <td class="text-center text-danger fw-bold bg-danger bg-opacity-10">{{ fila.detalle_actividades.get(act.id, 0.0) }}</td>
                                 {% endfor %}
                                 <td class="text-center text-danger fw-bolder bg-danger bg-opacity-25 border-end border-2">
                                     {% if fila.nota_liberacion is not none and fila.nota_liberacion > 0 %}
