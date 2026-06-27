@@ -12,12 +12,12 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# ==========================================
-# Bases de datos SQLite y datos de instancia
-# ==========================================
-instance/
-*.db
-*.sqlite3
+# # ==========================================
+# # Bases de datos SQLite y datos de instancia
+# # ==========================================
+# instance/
+# *.db
+# *.sqlite3
 
 # ==========================================
 # Variables de entorno y secretos
